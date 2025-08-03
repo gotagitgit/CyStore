@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Sdk Name="Aspire.AppHost.Sdk" Version="9.0.0" />
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsAspireHost>true</IsAspireHost>
+    <UserSecretsId>546cb51f-006b-4162-9976-af86821dc16f</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.AppHost" Version="9.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Store\AccountService\AccountService.csproj" />
+    <ProjectReference Include="..\..\Store\InventoryService\InventoryService.csproj" />
+    <ProjectReference Include="..\..\Store\ShoppingService\ShoppingService.csproj" />
+    <ProjectReference Include="..\..\Store\Web\Store.Web.csproj" />
+  </ItemGroup>
+
+</Project>
