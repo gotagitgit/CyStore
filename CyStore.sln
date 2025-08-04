@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Store.Web", "src\Store\Web\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CyStore.Aspire", "src\Utils\Store2018.Aspire\CyStore.Aspire.csproj", "{846F4EDF-852E-21DD-968A-C8ABE737E50D}"
 EndProject
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "store.reactweb", "src\Store\Store.ReactWeb\store.reactweb.esproj", "{A327B6BC-5647-35B2-F626-A76D78962B9B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -43,6 +45,12 @@ Global
 		{846F4EDF-852E-21DD-968A-C8ABE737E50D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{846F4EDF-852E-21DD-968A-C8ABE737E50D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{846F4EDF-852E-21DD-968A-C8ABE737E50D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A327B6BC-5647-35B2-F626-A76D78962B9B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A327B6BC-5647-35B2-F626-A76D78962B9B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A327B6BC-5647-35B2-F626-A76D78962B9B}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{A327B6BC-5647-35B2-F626-A76D78962B9B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A327B6BC-5647-35B2-F626-A76D78962B9B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A327B6BC-5647-35B2-F626-A76D78962B9B}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -53,6 +61,7 @@ Global
 		{10F50870-96DB-277A-E7E1-208538A88BD2} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{351CABCF-E615-6830-1D49-86837315266E} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{846F4EDF-852E-21DD-968A-C8ABE737E50D} = {0140CD3D-0B2B-4626-A596-4F4267ABF496}
+		{A327B6BC-5647-35B2-F626-A76D78962B9B} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4912CADC-DB42-4D08-BD7B-117C9E7BC0DA}
