@@ -5,34 +5,44 @@ services:
     build:
       context: .
       dockerfile: src/Store/AccountService/Dockerfile
-    ports:
-      - "7080:7080"
     container_name: cystore-accountservice
+    networks:
+      - cystore_network
 
   inventoryservice:
     build:
       context: .
       dockerfile: src/Store/InventoryService/Dockerfile
-    ports:
-      - "7082:7082"
     container_name: cystore-inventoryservice
+    networks:
+      - cystore_network
 
   shoppingservice:
     build:
       context: .
       dockerfile: src/Store/ShoppingService/Dockerfile
-    ports:
-      - "7083:7083"
     container_name: cystore-shoppingservice
+    networks:
+      - cystore_network
 
   web:
     build:
       context: .
       dockerfile: src/Store/Web/Dockerfile
     ports:
-      - "7084:7084"
+      - "7000:7000"
     container_name: cystore-web
+    environment:
+      - ACCOUNT_SERVICE_API_BASE=http://accountservice:7080/api
+      - INVENTORY_SERVICE_API_BASE=http://inventoryservice:7082/api
+      - SHOPPING_SERVICE_API_BASE=http://shoppingservice:7083/api
+    networks:
+      - cystore_network
+    depends_on:
+      - accountservice
+      - inventoryservice
+      - shoppingservice
 
 networks:
-  default:
-    name: cystore-network
+  cystore_network:
+    driver: bridge
