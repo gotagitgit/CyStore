@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  accountservice:
+    build:
+      context: .
+      dockerfile: src/Store/AccountService/Dockerfile
+    ports:
+      - "7080:7080"
+    container_name: cystore-accountservice
+
+  inventoryservice:
+    build:
+      context: .
+      dockerfile: src/Store/InventoryService/Dockerfile
+    ports:
+      - "7082:7082"
+    container_name: cystore-inventoryservice
+
+  shoppingservice:
+    build:
+      context: .
+      dockerfile: src/Store/ShoppingService/Dockerfile
+    ports:
+      - "7083:7083"
+    container_name: cystore-shoppingservice
+
+  web:
+    build:
+      context: .
+      dockerfile: src/Store/Web/Dockerfile
+    ports:
+      - "7084:7084"
+    container_name: cystore-web
+
+networks:
+  default:
+    name: cystore-network
