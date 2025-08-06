@@ -1,6 +1,22 @@
 version: '3.8'
 
 services:
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    container_name: cystore-nginx
+    networks:
+      - cystore_network
+    depends_on:
+      - web
+      - accountservice
+      - inventoryservice
+      - shoppingservice
+    restart: unless-stopped
+
   accountservice:
     build:
       context: .
@@ -29,13 +45,13 @@ services:
     build:
       context: .
       dockerfile: src/Store/Web/Dockerfile
-    ports:
-      - "7000:7000"
     container_name: cystore-web
     environment:
       - ACCOUNT_SERVICE_API_BASE=http://accountservice:7080/api
       - INVENTORY_SERVICE_API_BASE=http://inventoryservice:7082/api
-      - SHOPPING_SERVICE_API_BASE=http://shoppingservice:7083/api
+      - SHOPPING_SERVICE_API_BASE=http://shoppingservice:7084/api
+      - ASPNETCORE_URLS=http://+:7000
+      - ASPNETCORE_ENVIRONMENT=Development
     networks:
       - cystore_network
     depends_on:
