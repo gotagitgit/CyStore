@@ -416,3 +416,8 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# SSL certificates and private keys
+*.crt
+*.key
+*.pem
