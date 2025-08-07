@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting.AppHost" Version="9.0.0" />
+    <PackageReference Include="Aspire.Hosting.NodeJs" Version="9.0.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -19,6 +20,7 @@
     <ProjectReference Include="..\..\Store\InventoryService\InventoryService.csproj" />
     <ProjectReference Include="..\..\Store\ShoppingService\ShoppingService.csproj" />
     <ProjectReference Include="..\..\Store\Web\Store.Web.csproj" />
+    <ProjectReference Include="..\..\Store\store.webreact\store.webreact.esproj" />
   </ItemGroup>
 
 </Project>
