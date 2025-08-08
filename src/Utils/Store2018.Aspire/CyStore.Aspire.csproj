@@ -19,7 +19,6 @@
     <ProjectReference Include="..\..\Store\AccountService\AccountService.csproj" />
     <ProjectReference Include="..\..\Store\InventoryService\InventoryService.csproj" />
     <ProjectReference Include="..\..\Store\ShoppingService\ShoppingService.csproj" />
-    <ProjectReference Include="..\..\Store\Web\Store.Web.csproj" />
     <ProjectReference Include="..\..\Store\store.webreact\store.webreact.esproj" />
   </ItemGroup>
 
