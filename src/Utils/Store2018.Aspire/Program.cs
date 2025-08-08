@@ -11,16 +11,7 @@ var shoppingService = builder.AddProject<Projects.ShoppingService>("shoppingserv
     .WithHttpEndpoint(port: 8083, name: "http");
 
 // Add the React web store
-//builder.AddProject<Projects.store_webreact>("store-reactweb")
-builder.AddExecutable("store-reactweb", "npm", "../../Store/store.webreact", "run", "dev");    
-    //.WithHttpEndpoint(port: 64149, name: "http")
-    //.WithExternalHttpEndpoints();
+builder.AddExecutable("store-reactweb", "npm", "../../Store/store.webreact", "run", "dev");
 
-// Add the main web application
-builder.AddProject<Projects.Store_Web>("store2018")
-    .WithHttpEndpoint(port: 5000, name: "http")
-    .WithReference(accountService)
-    .WithReference(inventoryService)
-    .WithReference(shoppingService);
 
 builder.Build().Run();
