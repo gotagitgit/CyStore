@@ -31,34 +31,62 @@ function App() {
   const [currentUser, setCurrentUser] = useState<Consumer | null>(null)
   const [products, setProducts] = useState<Product[]>([])
   const [cartItems, setCartItems] = useState<Product[]>([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [consumersRes, productsRes, cartRes] = await Promise.all([
-          fetch('http://localhost:8081/api/consumers'),
-          fetch('http://localhost:8082/api/products'),
-          fetch('http://localhost:8083/api/cart/100')
-        ])
-
-        const consumersData = await consumersRes.json()
-        const productsData = await productsRes.json()
-        const cartData = await cartRes.json()
-
-        setConsumers(consumersData)
-        setCurrentUser(consumersData[0] || null)
-        setProducts(productsData)
-        setCartItems(cartData.items || [])
-      } catch (error) {
-        console.error('Error fetching data:', error)
-      } finally {
-        setLoading(false)
-      }
+  const fetchConsumers = async () => {
+    setLoading(true)
+    try {
+      const response = await fetch('http://localhost:8081/api/consumers')
+      const data = await response.json()
+      setConsumers(data)
+      setCurrentUser(data[0] || null)
+    } catch (error) {
+      console.error('Error fetching consumers:', error)
+    } finally {
+      setLoading(false)
     }
+  }
 
-    fetchData()
-  }, [])
+  const fetchProducts = async () => {
+    setLoading(true)
+    try {
+      const response = await fetch('http://localhost:8082/api/products')
+      const data = await response.json()
+      setProducts(data)
+    } catch (error) {
+      console.error('Error fetching products:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const fetchCart = async () => {
+    setLoading(true)
+    try {
+      const response = await fetch('http://localhost:8083/api/cart/100')
+      const data = await response.json()
+      setCartItems(data.items || [])
+    } catch (error) {
+      console.error('Error fetching cart:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleViewChange = (view: string) => {
+    setCurrentView(view)
+    switch (view) {
+      case 'accounts':
+        if (consumers.length === 0) fetchConsumers()
+        break
+      case 'inventory':
+        if (products.length === 0) fetchProducts()
+        break
+      case 'shopping':
+        if (cartItems.length === 0) fetchCart()
+        break
+    }
+  }
 
   const handleAddToCart = (product: Product) => {
     setCartItems(prev => {
@@ -100,7 +128,7 @@ function App() {
       <Header 
         cartItemCount={cartItems.length} 
         currentView={currentView}
-        onViewChange={setCurrentView}
+        onViewChange={handleViewChange}
       />
       <main className="main">
         {renderCurrentView()}
