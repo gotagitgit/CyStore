@@ -1,9 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import './App.css'
 import Header from './components/Header'
 import UserProfile from './components/UserProfile'
-import ProductGrid from './components/ProductGrid'
-import Cart from './components/Cart'
 import AccountsView from './components/AccountsView'
 import InventoryView from './components/InventoryView'
 import ShoppingView from './components/ShoppingView'
@@ -36,7 +34,7 @@ function App() {
   const fetchConsumers = async () => {
     setLoading(true)
     try {
-      const response = await fetch('http://localhost:8081/api/consumers')
+      const response = await fetch('/api/consumers')
       const data = await response.json()
       setConsumers(data)
       setCurrentUser(data[0] || null)
@@ -50,7 +48,7 @@ function App() {
   const fetchProducts = async () => {
     setLoading(true)
     try {
-      const response = await fetch('http://localhost:8082/api/products')
+      const response = await fetch('/api/products')
       const data = await response.json()
       setProducts(data)
     } catch (error) {
@@ -63,7 +61,7 @@ function App() {
   const fetchCart = async () => {
     setLoading(true)
     try {
-      const response = await fetch('http://localhost:8083/api/cart/100')
+      const response = await fetch('/api/cart/100')
       const data = await response.json()
       setCartItems(data.items || [])
     } catch (error) {
@@ -86,24 +84,6 @@ function App() {
         if (cartItems.length === 0) fetchCart()
         break
     }
-  }
-
-  const handleAddToCart = (product: Product) => {
-    setCartItems(prev => {
-      const existing = prev.find(item => item.id === product.id)
-      if (existing) {
-        return prev.map(item => 
-          item.id === product.id 
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        )
-      }
-      return [...prev, { ...product, quantity: 1 }]
-    })
-  }
-
-  const handleRemoveFromCart = (id: number) => {
-    setCartItems(prev => prev.filter(item => item.id !== id))
   }
 
   const renderCurrentView = () => {

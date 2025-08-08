@@ -13,7 +13,7 @@ services:
     networks:
       - cystore_network
     depends_on:
-      - web
+      - storereact
       - accountservice
       - inventoryservice
       - shoppingservice
@@ -43,23 +43,13 @@ services:
     networks:
       - cystore_network
 
-  web:
+  storereact:
     build:
       context: .
-      dockerfile: src/Store/Web/Dockerfile
-    container_name: cystore-web
-    environment:
-      - ACCOUNT_SERVICE_API_BASE=http://accountservice:7080/api
-      - INVENTORY_SERVICE_API_BASE=http://inventoryservice:7082/api
-      - SHOPPING_SERVICE_API_BASE=http://shoppingservice:7084/api
-      - ASPNETCORE_URLS=http://+:7000
-      - ASPNETCORE_ENVIRONMENT=Development
+      dockerfile: src/Store/store.webreact/Dockerfile
+    container_name: cystore-storereact
     networks:
       - cystore_network
-    depends_on:
-      - accountservice
-      - inventoryservice
-      - shoppingservice
 
 networks:
   cystore_network:
