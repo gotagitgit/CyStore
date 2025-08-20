@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cystore-shoppingservice
+  labels:
+    app: shoppingservice
+    project: cystore
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: shoppingservice
+  template:
+    metadata:
+      labels:
+        app: shoppingservice
+    spec:
+      containers:
+      - name: cystore-shoppingservice
+        image: cystore-shoppingservice:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 7082
+        env:
+        - name: ASPNETCORE_ENVIRONMENT
+          value: "Production"
+        - name: ASPNETCORE_HTTP_PORTS
+          value: "7082"
+        - name: ASPNETCORE_URLS
+          value: "http://0.0.0.0:7082"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: cystore-shoppingservice
+  labels:
+    project: cystore
+spec:
+  selector:
+    app: shoppingservice
+  ports:
+  - protocol: TCP
+    port: 7082
+    targetPort: 7082
+  type: NodePort

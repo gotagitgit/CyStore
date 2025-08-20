@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cystore-accountservice
+  labels:
+    app: accountservice
+    project: cystore
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: accountservice
+  template:
+    metadata:
+      labels:
+        app: accountservice
+    spec:
+      containers:
+      - name: cystore-accountservice
+        image: cystore-accountservice:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 7080
+        env:
+        - name: ASPNETCORE_ENVIRONMENT
+          value: "Production"
+        - name: ASPNETCORE_HTTP_PORTS
+          value: "7080"
+        - name: ASPNETCORE_URLS
+          value: "http://0.0.0.0:7080"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: cystore-accountservice
+  labels:
+    project: cystore
+spec:
+  selector:
+    app: accountservice
+  ports:
+  - protocol: TCP
+    port: 7080
+    targetPort: 7080
+  type: NodePort

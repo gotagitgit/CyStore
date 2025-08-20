@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cystore-storereact
+  labels:
+    app: storereact
+    project: cystore
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: storereact
+  template:
+    metadata:
+      labels:
+        app: storereact
+    spec:
+      containers:
+      - name: cystore-storereact
+        image: cystore-storereact:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cystore-storereact
+  labels:
+    project: cystore
+spec:
+  selector:
+    app: storereact
+  ports:
+  - port: 7000
+    targetPort: 80
+    protocol: TCP
+  type: NodePort

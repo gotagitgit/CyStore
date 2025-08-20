@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cystore-inventoryservice
+  labels:
+    app: inventoryservice
+    project: cystore
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: inventoryservice
+  template:
+    metadata:
+      labels:
+        app: inventoryservice
+    spec:
+      containers:
+      - name: cystore-inventoryservice
+        image: cystore-inventoryservice:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 7081
+        env:
+        - name: ASPNETCORE_ENVIRONMENT
+          value: "Production"
+        - name: ASPNETCORE_HTTP_PORTS
+          value: "7081"
+        - name: ASPNETCORE_URLS
+          value: "http://0.0.0.0:7081"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: cystore-inventoryservice
+  labels:
+    project: cystore
+spec:
+  selector:
+    app: inventoryservice
+  ports:
+  - protocol: TCP
+    port: 7081
+    targetPort: 7081
+  type: NodePort
