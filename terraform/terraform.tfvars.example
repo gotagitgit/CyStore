@@ -1,0 +1,7 @@
+aws_profile     = "your-aws-profile-name"
+aws_region      = "your-preferred-region"
+az_count        = "number-of-availability-zones"
+environment     = "your-environment"
+prefix          = "your-tag-prefix"
+project         = "your-project-name"
+vpc_cidr_block  = "your-vpc-cidr-block"
