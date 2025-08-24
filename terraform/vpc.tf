@@ -58,41 +58,81 @@ resource "aws_route_table_association" "public" {
   route_table_id = aws_route_table.public.id
 }
 
-resource "aws_eip" "nat" {
-  count  = var.az_count
-  domain = "vpc"
+resource "aws_security_group" "nat" {
+  name_prefix = "${var.prefix}-nat-"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr_block]
+  }
+
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr_block]
+  }
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
   tags = {
-    Name = "${var.prefix}-nat-eip-${count.index}"
+    Name = "${var.prefix}-nat-sg"
   }
 }
 
-resource "aws_nat_gateway" "main" {
-  count         = var.az_count
-  allocation_id = aws_eip.nat[count.index].id
-  subnet_id     = aws_subnet.public[count.index].id
+resource "aws_instance" "nat" {
+  ami                         = data.aws_ami.nat.id
+  instance_type              = "t3.micro"
+  subnet_id                  = aws_subnet.public[0].id
+  vpc_security_group_ids     = [aws_security_group.nat.id]
+  associate_public_ip_address = true
+  source_dest_check          = false
+
+  user_data = <<-EOF
+    #!/bin/bash
+    echo 'net.ipv4.ip_forward = 1' >> /etc/sysctl.conf
+    sysctl -p
+    iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+    iptables -A FORWARD -i eth0 -o eth0 -m state --state RELATED,ESTABLISHED -j ACCEPT
+    iptables -A FORWARD -i eth0 -o eth0 -j ACCEPT
+  EOF
 
   tags = {
-    Name = "${var.prefix}-nat-gw-${count.index}"
+    Name = "${var.prefix}-nat-instance"
   }
 }
 
 resource "aws_route_table" "private" {
-  count  = var.az_count
   vpc_id = aws_vpc.main.id
 
-  route {
-    cidr_block     = "0.0.0.0/0"
-    nat_gateway_id = aws_nat_gateway.main[count.index].id
-  }
-
   tags = {
-    Name = "${var.prefix}-private-rt-${count.index}"
+    Name = "${var.prefix}-private-rt"
   }
+}
+
+resource "aws_route" "private_nat" {
+  route_table_id         = aws_route_table.private.id
+  destination_cidr_block = "0.0.0.0/0"
+  network_interface_id   = aws_instance.nat.primary_network_interface_id
 }
 
 resource "aws_route_table_association" "private" {
   count          = var.az_count
   subnet_id      = aws_subnet.private[count.index].id
-  route_table_id = aws_route_table.private[count.index].id
+  route_table_id = aws_route_table.private.id
 }

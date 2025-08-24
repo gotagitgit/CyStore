@@ -5,3 +5,8 @@ environment     = "your-environment"
 prefix          = "your-tag-prefix"
 project         = "your-project-name"
 vpc_cidr_block  = "your-vpc-cidr-block"
+
+docker_image_store_web     = "your-dockerhub-username/store-web:latest"
+docker_image_api_account   = "your-dockerhub-username/api-account:latest"
+docker_image_api_inventory = "your-dockerhub-username/api-inventory:latest"
+docker_image_api_shopping  = "your-dockerhub-username/api-shopping:latest"

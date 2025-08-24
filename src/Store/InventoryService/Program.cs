@@ -48,6 +48,9 @@ if (app.Environment.IsDevelopment())
 
 app.MapDefaultEndpoints();
 
+// Health check endpoint
+app.MapGet("/health", () => Results.Ok(new { status = "healthy", service = "InventoryService" }));
+
 app.MapControllers();
 
 app.Run();
