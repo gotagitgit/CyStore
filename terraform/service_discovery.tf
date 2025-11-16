@@ -1,6 +1,8 @@
+# PHASE 8 RESOURCES - SERVICE DISCOVERY (OPTIONAL FOR NLB)
+
 resource "aws_service_discovery_private_dns_namespace" "main" {
   name = "microservices.private"
-  vpc  = aws_vpc.main.id
+  vpc  = data.aws_vpc.default.id
 }
 
 resource "aws_service_discovery_service" "api_account" {

@@ -1,6 +1,6 @@
 resource "aws_security_group" "alb" {
   name_prefix = "${var.prefix}-alb-"
-  vpc_id      = aws_vpc.main.id
+  vpc_id      = data.aws_vpc.default.id
 
   ingress {
     from_port   = 80
@@ -30,7 +30,7 @@ resource "aws_security_group" "alb" {
 
 resource "aws_security_group" "ecs" {
   name_prefix = "${var.prefix}-ecs-"
-  vpc_id      = aws_vpc.main.id
+  vpc_id      = data.aws_vpc.default.id
 
   ingress {
     from_port       = 80
@@ -43,7 +43,7 @@ resource "aws_security_group" "ecs" {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    cidr_blocks = [aws_vpc.main.cidr_block]
+    cidr_blocks = [data.aws_vpc.default.cidr_block]
   }
 
   egress {

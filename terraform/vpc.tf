@@ -1,138 +1,81 @@
-resource "aws_vpc" "main" {
-  cidr_block           = var.vpc_cidr_block
-  enable_dns_hostnames = true
-  enable_dns_support   = true
+data "aws_vpc" "default" {
+  default = true
+}
 
-  tags = {
-    Name = "${var.prefix}-main-vpc"
+data "aws_subnets" "default" {
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_vpc.default.id]
   }
 }
 
+data "aws_subnet" "default" {
+  count = length(data.aws_subnets.default.ids)
+  id    = data.aws_subnets.default.ids[count.index]
+}
+
+# Use existing default subnets
+locals {
+  public_subnet_ids = [for s in data.aws_subnet.default : s.id if s.map_public_ip_on_launch]
+  private_subnet_ids = [for s in data.aws_subnet.default : s.id if !s.map_public_ip_on_launch]
+}
+
+# Create private subnets if none exist
 resource "aws_subnet" "private" {
-  count                   = var.az_count
-  vpc_id                  = aws_vpc.main.id
-  cidr_block              = cidrsubnet(var.vpc_cidr_block, var.subnet_newbits, count.index)
-  availability_zone       = data.aws_availability_zones.available.names[count.index]
+  count             = length(local.private_subnet_ids) > 0 ? 0 : var.az_count
+  vpc_id            = data.aws_vpc.default.id
+  cidr_block        = cidrsubnet(data.aws_vpc.default.cidr_block, 8, count.index + 100)
+  availability_zone = data.aws_availability_zones.available.names[count.index]
 
   tags = {
     Name = "${var.prefix}-private-subnet-${count.index}"
   }
 }
 
-resource "aws_subnet" "public" {
-  count                   = var.az_count
-  vpc_id                  = aws_vpc.main.id
-  cidr_block              = cidrsubnet(var.vpc_cidr_block, var.subnet_newbits, var.az_count + count.index)
-  availability_zone       = data.aws_availability_zones.available.names[count.index]
-  map_public_ip_on_launch = true
-
-  tags = {
-    Name = "${var.prefix}-public-subnet-${count.index}"
+data "aws_internet_gateway" "default" {
+  filter {
+    name   = "attachment.vpc-id"
+    values = [data.aws_vpc.default.id]
   }
 }
 
-resource "aws_internet_gateway" "main_igw" {
-  vpc_id = aws_vpc.main.id
-
-  tags = {
-    Name = "${var.prefix}-main-igw"
-  }
-}
-
-resource "aws_route_table" "public" {
-  vpc_id = aws_vpc.main.id
-
-  route {
-    cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.main_igw.id
-  }
-
-  tags = {
-    Name = "${var.prefix}-public-rt"
-  }
-}
-
-resource "aws_route_table_association" "public" {
-  count          = var.az_count
-  subnet_id      = aws_subnet.public[count.index].id
-  route_table_id = aws_route_table.public.id
-}
-
-resource "aws_security_group" "nat" {
-  name_prefix = "${var.prefix}-nat-"
-  vpc_id      = aws_vpc.main.id
-
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = [var.vpc_cidr_block]
-  }
-
-  ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = [var.vpc_cidr_block]
-  }
-
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "${var.prefix}-nat-sg"
-  }
-}
-
-resource "aws_instance" "nat" {
-  ami                         = data.aws_ami.nat.id
-  instance_type              = "t3.micro"
-  subnet_id                  = aws_subnet.public[0].id
-  vpc_security_group_ids     = [aws_security_group.nat.id]
-  associate_public_ip_address = true
-  source_dest_check          = false
-
-  user_data = <<-EOF
-    #!/bin/bash
-    echo 'net.ipv4.ip_forward = 1' >> /etc/sysctl.conf
-    sysctl -p
-    iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
-    iptables -A FORWARD -i eth0 -o eth0 -m state --state RELATED,ESTABLISHED -j ACCEPT
-    iptables -A FORWARD -i eth0 -o eth0 -j ACCEPT
-  EOF
-
-  tags = {
-    Name = "${var.prefix}-nat-instance"
-  }
-}
+# Use default route table for public subnets
 
 resource "aws_route_table" "private" {
-  vpc_id = aws_vpc.main.id
+  vpc_id = data.aws_vpc.default.id
 
   tags = {
     Name = "${var.prefix}-private-rt"
   }
 }
 
+resource "aws_eip" "nat" {
+  domain = "vpc"
+  
+  tags = {
+    Name = "${var.prefix}-nat-eip"
+  }
+}
+
+resource "aws_nat_gateway" "main" {
+  allocation_id = aws_eip.nat.id
+  subnet_id     = local.public_subnet_ids[0]
+
+  tags = {
+    Name = "${var.prefix}-nat-gateway"
+  }
+
+  depends_on = [data.aws_internet_gateway.default]
+}
+
 resource "aws_route" "private_nat" {
   route_table_id         = aws_route_table.private.id
   destination_cidr_block = "0.0.0.0/0"
-  network_interface_id   = aws_instance.nat.primary_network_interface_id
+  nat_gateway_id         = aws_nat_gateway.main.id
 }
 
 resource "aws_route_table_association" "private" {
-  count          = var.az_count
-  subnet_id      = aws_subnet.private[count.index].id
+  count          = length(local.private_subnet_ids) > 0 ? length(local.private_subnet_ids) : var.az_count
+  subnet_id      = length(local.private_subnet_ids) > 0 ? local.private_subnet_ids[count.index] : aws_subnet.private[count.index].id
   route_table_id = aws_route_table.private.id
 }

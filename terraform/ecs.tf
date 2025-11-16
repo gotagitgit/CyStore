@@ -1,3 +1,5 @@
+# PHASE 5 RESOURCES - ECS FOUNDATION
+
 resource "aws_ecs_cluster" "main" {
   name = "${var.prefix}-cluster"
 
@@ -135,12 +137,12 @@ resource "aws_ecs_service" "store_web" {
   name            = "${var.prefix}-store-web"
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.store_web.arn
-  desired_count   = 2
+  desired_count   = 1
   launch_type     = "FARGATE"
 
   network_configuration {
-    subnets         = aws_subnet.public[*].id
-    security_groups = [aws_security_group.alb.id]
+    subnets          = local.public_subnet_ids
+    security_groups  = [aws_security_group.alb.id]
     assign_public_ip = true
   }
 
@@ -150,18 +152,18 @@ resource "aws_ecs_service" "store_web" {
     container_port   = 7000
   }
 
-  depends_on = [aws_lb_listener.alb]
+  depends_on = [aws_lb_listener.web]
 }
 
 resource "aws_ecs_service" "api_account" {
   name            = "${var.prefix}-api-account"
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.api_account.arn
-  desired_count   = 2
+  desired_count   = 1
   launch_type     = "FARGATE"
 
   network_configuration {
-    subnets         = aws_subnet.private[*].id
+    subnets         = length(local.private_subnet_ids) > 0 ? local.private_subnet_ids : [for subnet in aws_subnet.private : subnet.id]
     security_groups = [aws_security_group.ecs.id]
   }
 
@@ -171,22 +173,18 @@ resource "aws_ecs_service" "api_account" {
     container_port   = 7080
   }
 
-  service_registries {
-    registry_arn = aws_service_discovery_service.api_account.arn
-  }
-
-  depends_on = [aws_lb_listener.alb]
+  depends_on = [aws_lb_listener.api_account]
 }
 
 resource "aws_ecs_service" "api_inventory" {
   name            = "${var.prefix}-api-inventory"
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.api_inventory.arn
-  desired_count   = 2
+  desired_count   = 1
   launch_type     = "FARGATE"
 
   network_configuration {
-    subnets         = aws_subnet.private[*].id
+    subnets         = length(local.private_subnet_ids) > 0 ? local.private_subnet_ids : [for subnet in aws_subnet.private : subnet.id]
     security_groups = [aws_security_group.ecs.id]
   }
 
@@ -196,22 +194,18 @@ resource "aws_ecs_service" "api_inventory" {
     container_port   = 7082
   }
 
-  service_registries {
-    registry_arn = aws_service_discovery_service.api_inventory.arn
-  }
-
-  depends_on = [aws_lb_listener.alb]
+  depends_on = [aws_lb_listener.api_inventory]
 }
 
 resource "aws_ecs_service" "api_shopping" {
   name            = "${var.prefix}-api-shopping"
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.api_shopping.arn
-  desired_count   = 2
+  desired_count   = 1
   launch_type     = "FARGATE"
 
   network_configuration {
-    subnets         = aws_subnet.private[*].id
+    subnets         = length(local.private_subnet_ids) > 0 ? local.private_subnet_ids : [for subnet in aws_subnet.private : subnet.id]
     security_groups = [aws_security_group.ecs.id]
   }
 
@@ -221,11 +215,7 @@ resource "aws_ecs_service" "api_shopping" {
     container_port   = 7084
   }
 
-  service_registries {
-    registry_arn = aws_service_discovery_service.api_shopping.arn
-  }
-
-  depends_on = [aws_lb_listener.alb]
+  depends_on = [aws_lb_listener.api_shopping]
 }
 
 resource "aws_cloudwatch_log_group" "ecs" {

@@ -23,7 +23,8 @@ services:
     build:
       context: .
       dockerfile: src/Store/AccountService/Dockerfile
-    container_name: cystore-accountservice
+    image: theeknockdocker/accountservice:latest
+    container_name: accountservice
     networks:
       - cystore_network
 
@@ -31,7 +32,8 @@ services:
     build:
       context: .
       dockerfile: src/Store/InventoryService/Dockerfile
-    container_name: cystore-inventoryservice
+    image: theeknockdocker/inventoryservice:latest
+    container_name: inventoryservice
     networks:
       - cystore_network
 
@@ -39,7 +41,8 @@ services:
     build:
       context: .
       dockerfile: src/Store/ShoppingService/Dockerfile
-    container_name: cystore-shoppingservice
+    image: theeknockdocker/shoppingservice:latest
+    container_name: shoppingservice
     networks:
       - cystore_network
 
@@ -47,7 +50,8 @@ services:
     build:
       context: .
       dockerfile: src/Store/store.webreact/Dockerfile
-    container_name: cystore-storereact
+    image: theeknockdocker/storereact:latest
+    container_name: storereact
     networks:
       - cystore_network
 

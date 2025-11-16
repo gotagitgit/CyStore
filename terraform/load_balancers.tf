@@ -1,27 +1,27 @@
+# PHASE 6 RESOURCES - LOAD BALANCERS
+
 resource "aws_lb" "alb" {
-  name               = "${var.prefix}-alb"
-  internal           = true
-  load_balancer_type = "application"
-  security_groups    = [aws_security_group.alb.id]
-  subnets            = aws_subnet.private[*].id
+  name               = "${var.prefix}-nlb"
+  internal           = false
+  load_balancer_type = "network"
+  subnets            = local.public_subnet_ids
 
   tags = {
-    Name = "${var.prefix}-alb"
+    Name = "${var.prefix}-nlb"
   }
 }
 
 resource "aws_lb_target_group" "web" {
   name        = "${var.prefix}-web-tg"
-  port        = 80
-  protocol    = "HTTP"
-  vpc_id      = aws_vpc.main.id
+  port        = 7000
+  protocol    = "TCP"
+  vpc_id      = data.aws_vpc.default.id
   target_type = "ip"
 
   health_check {
     enabled             = true
     healthy_threshold   = 2
-    path                = "/health"
-    protocol            = "HTTP"
+    protocol            = "TCP"
     unhealthy_threshold = 2
   }
 }
@@ -29,8 +29,8 @@ resource "aws_lb_target_group" "web" {
 resource "aws_lb_target_group" "api_account" {
   name        = "${var.prefix}-api-account-tg"
   port        = 7080
-  protocol    = "HTTP"
-  vpc_id      = aws_vpc.main.id
+  protocol    = "TCP"
+  vpc_id      = data.aws_vpc.default.id
   target_type = "ip"
 
   health_check {
@@ -45,8 +45,8 @@ resource "aws_lb_target_group" "api_account" {
 resource "aws_lb_target_group" "api_inventory" {
   name        = "${var.prefix}-api-inventory-tg"
   port        = 7082
-  protocol    = "HTTP"
-  vpc_id      = aws_vpc.main.id
+  protocol    = "TCP"
+  vpc_id      = data.aws_vpc.default.id
   target_type = "ip"
 
   health_check {
@@ -61,8 +61,8 @@ resource "aws_lb_target_group" "api_inventory" {
 resource "aws_lb_target_group" "api_shopping" {
   name        = "${var.prefix}-api-shopping-tg"
   port        = 7084
-  protocol    = "HTTP"
-  vpc_id      = aws_vpc.main.id
+  protocol    = "TCP"
+  vpc_id      = data.aws_vpc.default.id
   target_type = "ip"
 
   health_check {
@@ -74,10 +74,11 @@ resource "aws_lb_target_group" "api_shopping" {
   }
 }
 
-resource "aws_lb_listener" "alb" {
+# NLB listeners for each service (no path-based routing)
+resource "aws_lb_listener" "web" {
   load_balancer_arn = aws_lb.alb.arn
-  port              = "80"
-  protocol          = "HTTP"
+  port              = "7000"
+  protocol          = "TCP"
 
   default_action {
     type             = "forward"
@@ -85,65 +86,35 @@ resource "aws_lb_listener" "alb" {
   }
 }
 
-# resource "aws_lb_listener" "alb" {
-#   load_balancer_arn = aws_lb.alb.arn
-#   port              = "80"
-#   protocol          = "HTTP"
+resource "aws_lb_listener" "api_account" {
+  load_balancer_arn = aws_lb.alb.arn
+  port              = "7080"
+  protocol          = "TCP"
 
-#   default_action {
-#     type = "fixed-response"
-#     fixed_response {
-#       content_type = "text/plain"
-#       message_body = "Not Found"
-#       status_code  = "404"
-#     }
-#   }
-# }
-
-resource "aws_lb_listener_rule" "api_consumers" {
-  listener_arn = aws_lb_listener.alb.arn
-  priority     = 100
-
-  action {
+  default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.api_account.arn
   }
-
-  condition {
-    path_pattern {
-      values = ["/api/consumers*"]
-    }
-  }
 }
 
-resource "aws_lb_listener_rule" "api_products" {
-  listener_arn = aws_lb_listener.alb.arn
-  priority     = 200
+resource "aws_lb_listener" "api_inventory" {
+  load_balancer_arn = aws_lb.alb.arn
+  port              = "7082"
+  protocol          = "TCP"
 
-  action {
+  default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.api_inventory.arn
   }
-
-  condition {
-    path_pattern {
-      values = ["/api/products*"]
-    }
-  }
 }
 
-resource "aws_lb_listener_rule" "api_cart" {
-  listener_arn = aws_lb_listener.alb.arn
-  priority     = 300
+resource "aws_lb_listener" "api_shopping" {
+  load_balancer_arn = aws_lb.alb.arn
+  port              = "7084"
+  protocol          = "TCP"
 
-  action {
+  default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.api_shopping.arn
-  }
-
-  condition {
-    path_pattern {
-      values = ["/api/cart*"]
-    }
   }
 }
